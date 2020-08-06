@@ -1,18 +1,28 @@
 from room import Room
 from player import Player
+from item import Item
+
+# Declare all the items
+
+item = {
+    'rusty_sword': Item("Rusty Sword", "A bad rusted sword"),
+    'potion': Item("Potion", "A high grade potion"),
+    'coin': Item("Coin", "The land's currency"),
+    'legendary_sword': Item("Legendary Sword", "The legendary sword")
+}
 
 # Declare all the rooms
 
 room = {
-    'outside': Room("Outside Cave Entrance", "North of you, the cave mount beckons", ["Rusty Sword"]),
+    'outside': Room("Outside Cave Entrance", "North of you, the cave mount beckons", [item['rusty_sword'],]),
 
-    'foyer': Room("Foyer", """Dim light filters in from the south. Dusty passages run north and east.""", ["Potion"]),
+    'foyer': Room("Foyer", """Dim light filters in from the south. Dusty passages run north and east.""", [item['potion'],]),
 
     'overlook': Room("Grand Overlook", """A steep cliff appears before you, falling into the darkness. Ahead to the north, a light flickers in the distance, but there is no way across the chasm."""),
 
-    'narrow': Room("Narrow Passage", """The narrow passage bends here from west to north. The smell of gold permeates the air."""),
+    'narrow': Room("Narrow Passage", """The narrow passage bends here from west to north. The smell of gold permeates the air.""", [item['coin'],]),
 
-    'treasure': Room("Treasure Chamber", """You've found the long-lost treasure chamber! Sadly, it has already been completely emptied by earlier adventurers. The only exit is to the south.""", ["Legendary Sword"]),
+    'treasure': Room("Treasure Chamber", """You've found the long-lost treasure chamber! Sadly, it has already been completely emptied by earlier adventurers. The only exit is to the south.""", [item['legendary_sword'],]),
 }
 
 
@@ -48,16 +58,18 @@ choice = ""
 while not (choice == "q" or choice == "quit"):
     print(f"\nCurrent Room: {plyr.current_room.name}")
     print(f"Current Description: {plyr.current_room.description}")
-    print(f"Current Room Items: {plyr.current_room.item}")
+    print("Current Room's Items:")
+    for i in plyr.current_room.item:
+        print(f"\t{i.name}")
     print("Where would you like to go?")
-    print("n for North")
-    print("s for South")
-    print("w for West")
-    print("e for East")
-    print("i for Inventory")
-    print("t for Take")
-    print("d for Drop")
-    print("q for Quit")
+    print("-> n for North")
+    print("-> s for South")
+    print("-> w for West")
+    print("-> e for East")
+    print("-> i for Inventory")
+    print("-> t for Take")
+    print("-> d for Drop")
+    print("-> q for Quit")
     choice = input("> ")
     choice = choice.lower()
     if choice == "n" or choice == "north":
@@ -91,13 +103,15 @@ while not (choice == "q" or choice == "quit"):
     elif choice == "q" or choice == "quit":
         print("Now quitting...")
     elif choice == "i" or choice == "inventory":
-        print(plyr.items)
-    elif choice == "t" or choice == "take":
+        print("Inventory:")
+        for i in range(len(plyr.items)):
+            print(f"\t{plyr.items[i].name}: \t{plyr.items[i].description}")
+    elif choice == "t" or choice == "take" or choice == "get" or choice == "g":
         if len(plyr.current_room.item) == 0:
             print("There is nothing to take")
         else:
             for i in range(len(plyr.current_room.item)):
-                print(f"{i}: {plyr.current_room.item[i]}")
+                print(f"{i}: {plyr.current_room.item[i].name}")
             print("Type the number of the item that you would like")
             print("Enter b to go back")
             taken = input("> ")
@@ -108,15 +122,16 @@ while not (choice == "q" or choice == "quit"):
             if taken == "b" or taken == "back":
                 print("Taking you back to the room menu...")
             try:
+                plyr.current_room.item[int(taken)].on_take()
                 plyr.items.append(plyr.current_room.item.pop(int(taken)))
             except:
-                print("An error has occured.")
+                print("That is not a valid choice, please choose again.")
     elif choice == "d" or choice == "drop":
         if len(plyr.items) == 0:
             print("There is nothing to drop")
         else:
             for i in range(len(plyr.items)):
-                print(f"{i}: {plyr.items[i]}")
+                print(f"{i}: {plyr.items[i].name}")
             print("Type the number of the item that you would like to drop: ")
             print("Enter b to go back")
             drop = input("> ")
@@ -127,8 +142,10 @@ while not (choice == "q" or choice == "quit"):
             if drop == "b" or drop == "back":
                 print("Taking you back to the room menu...")
             try:
+                plyr.items[int(drop)].on_drop()
                 plyr.current_room.item.append(plyr.items.pop(int(drop)))
             except:
-                print("An error has occured.")
+                print("That is not a valid choice, please choose again.")
     else:
         print("That is not a valid choice")
+    print("\n-------------------------------------------------------")
